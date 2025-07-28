@@ -1,11 +1,10 @@
 package usecases_test
 
 import (
-	
+	"errors"
 	domain "task_management/Domain"
 	"task_management/usecases"
 	"testing"
-
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -114,7 +113,7 @@ func (suite *UserUseCaseTestSuite) TestRegister(){
 	}
 	hashedPassword:="hashed123123123"
 
-	//first user becomes admin
+	//successful registration -first user becomes admin
 	suite.Run("succesfull registration first user admin",func() {
 		//first setup the test which resets the mocks
 		suite.SetupTest()
@@ -140,5 +139,135 @@ func (suite *UserUseCaseTestSuite) TestRegister(){
 		suite.Equal(domain.RoleAdmin,user.Role)
 		suite.userRepo.AssertExpectations(suite.T())
 		suite.passwordService.AssertExpectations(suite.T())
+	})
+
+	//test 2 successful registration-subsequent user becomes normal user
+	suite.Run("successful registration of susequent user",func() {
+		//setup test
+		suite.SetupTest()
+		
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(0),nil).Once()
+		suite.userRepo.On("CountAll").Return(int64(5),nil).Once()
+		suite.userRepo.On("HashPassword",input.Password).Return(hashedPassword,nil).Once()
+		suite.userRepo.On("CreateUser", mock.AnythingOfType("*domain.User")).Return(nil).Run(func(args mock.Arguments) {
+			userArg := args.Get(0).(*domain.User)
+			suite.Equal(input.Username, userArg.Username)
+			suite.Equal(hashedPassword, userArg.Password)
+			suite.Equal(domain.RoleUser, userArg.Role) 
+		}).Once()
+
+		//call the register method
+		user,err:=suite.useCase.Register(input)
+
+		//assertions
+		suite.NoError(err)
+		suite.NotNil(user)
+		suite.Equal(input.Username, user.Username)
+		suite.Equal(hashedPassword, user.Password)
+		suite.Equal(domain.RoleUser, user.Role) // Verify role is User
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertExpectations(suite.T())
+
+	})
+
+	//test 3 registration with existing username
+	suite.Run("registration with exitsing username ",func() {
+
+		//setup the test
+		suite.SetupTest()
+		
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(1),nil).Once()
+
+		//call the register method
+		user,err:=suite.useCase.Register(input)
+
+		//assertions
+		suite.Error(err)
+		suite.Nil(user)
+		suite.EqualError(err,"username already exits")
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertNotCalled(suite.T(),"HashPassword")
+		suite.userRepo.AssertNotCalled(suite.T(),"CreateUser")
+
+
+
+	})
+	//test 4 error during countbyusername
+	suite.Run("error countbyusername",func() {
+		suite.SetupTest()
+
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(0),errors.New("error counting"))
+
+		//call the register method
+		user,err:=suite.useCase.Register(input)
+
+		//assertions
+		suite.Error(err)
+		suite.Nil(user)
+		suite.EqualError(err,"error while checking existing user")
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertNotCalled(suite.T(),"HashPassword")
+		suite.userRepo.AssertNotCalled(suite.T(),"CreateUser")
+
+	})
+
+	//test 5 error during count all
+	suite.Run("error during count all",func() {
+		suite.SetupTest()
+
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(0),nil).Once()
+		suite.userRepo.On("CountAll").Return(int64(0),errors.New("error counting")).Once()
+
+		//calll the register method
+		user,err:=suite.useCase.Register(input)
+
+		//assertions
+		suite.Error(err)
+		suite.Nil(user)
+		suite.EqualError(err, "error checking total users")
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertNotCalled(suite.T(), "HashPassword")
+		suite.userRepo.AssertNotCalled(suite.T(), "CreateUser")
+
+	})
+	// test 6 error duing hashing 
+	suite.Run("error hashing",func() {
+		suite.SetupTest()
+
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(0),nil).Once()
+		suite.userRepo.On("CountAll").Return(int64(0),nil).Once()
+		suite.userRepo.On("HashPassword",input.Password).Return("",errors.New("error during hashing"))
+
+		//call the register method
+		user,err:=suite.useCase.Register(input)
+		
+		suite.Error(err)
+		suite.Nil(user)
+		suite.EqualError(err, "failed to hash password")
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertExpectations(suite.T())
+		suite.userRepo.AssertNotCalled(suite.T(), "CreateUser")
+
+	})
+	//test 7 error during createuser
+	suite.Run("error while creating user",func() {
+		suite.SetupTest()
+
+		suite.userRepo.On("CountByUsername",input.Username).Return(int64(0),nil).Once()
+		suite.userRepo.On("CountAll").Return(int64(0),nil).Once()
+		suite.passwordService.On("HashPassword",input.Password).Return(hashedPassword,nil).Once()
+		suite.userRepo.On("CreateUser", mock.AnythingOfType("*domain.User")).Return(errors.New("insertion error")).Once()
+
+		// Call the Register method
+
+		user,err:=suite.useCase.Register(input)
+
+		//assertions
+		suite.Error(err)
+		suite.Nil(user)
+		suite.EqualError(err,"failed to add user")
+		suite.userRepo.AssertExpectations(suite.T())
+		suite.passwordService.AssertExpectations(suite.T())
+
 	})
 }
