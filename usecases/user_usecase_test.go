@@ -353,3 +353,60 @@ func (suite *UserUseCaseTestSuite) TestLogin() {
 	})
 
 }
+func (suite *UserUseCaseTestSuite) TestPromoteUser() {
+    validUserID := primitive.NewObjectID().Hex()
+
+    // Test 1  Successful promotion
+    suite.Run("successful promotion", func() {
+        suite.SetupTest()
+        
+
+        suite.userRepo.On("PromoteUser", validUserID).Return(nil).Once()
+
+        err := suite.useCase.PromoteUser(validUserID)
+        
+        suite.NoError(err)
+        suite.userRepo.AssertExpectations(suite.T())
+    })
+
+    // Test 2 Repository returns error
+    suite.Run("repository returns error", func() {
+        suite.SetupTest()
+        
+        expectedErr := errors.New("database error")
+        suite.userRepo.On("PromoteUser", validUserID).Return(expectedErr).Once()
+
+        err := suite.useCase.PromoteUser(validUserID)
+        
+        suite.Error(err)
+        suite.Equal(expectedErr, err) 
+        suite.userRepo.AssertExpectations(suite.T())
+    })
+
+    // Test 3 Empty user ID
+    suite.Run("empty user ID", func() {
+        suite.SetupTest()
+
+       
+        suite.userRepo.On("PromoteUser", "").Return(nil).Once()
+
+        err := suite.useCase.PromoteUser("")
+        
+        suite.NoError(err) 
+        suite.userRepo.AssertExpectations(suite.T())
+    })
+
+    // Test 4  Invalid user ID format
+    suite.Run("invalid user ID format", func() {
+        suite.SetupTest()
+        
+        invalidID := "invalid-id"
+        
+        suite.userRepo.On("PromoteUser", invalidID).Return(nil).Once()
+
+        err := suite.useCase.PromoteUser(invalidID)
+        
+        suite.NoError(err) 
+        suite.userRepo.AssertExpectations(suite.T())
+    })
+}
