@@ -21,7 +21,7 @@ type IPasswordService interface {
 }
 
 type IJWTService interface {
-	GenerateToken(userID, role string) (string, error)
+	GenerateToken(userID string, role domain.Role) (string, error)
 }
 
 // task related interfaces

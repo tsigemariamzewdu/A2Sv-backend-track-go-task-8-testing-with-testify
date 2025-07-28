@@ -1,6 +1,7 @@
 package infrastruture
 
 import (
+	domain "task_management/Domain"
 	usecases "task_management/usecases"
 	"time"
 
@@ -21,7 +22,7 @@ func NewJWTService(secret string)usecases.IJWTService {
 
 
 // GenerateToken creates a signed JWT token for the given user ID and role
-func (j *JWTService) GenerateToken(userID, role string) (string, error) {
+func (j *JWTService) GenerateToken(userID string, role domain.Role) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":  userID,
 		"role": role,

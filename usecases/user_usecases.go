@@ -3,15 +3,12 @@ package usecases
 import (
 	"errors"
 	domain "task_management/Domain"
-
-	
 )
 
 type UserUseCase struct {
 	UserRepo        IUserRepository
 	PasswordService IPasswordService
 	JWTService      IJWTService
-	
 }
 
 func NewUserUseCase(repo IUserRepository, ps IPasswordService, jw IJWTService) *UserUseCase {
@@ -50,7 +47,7 @@ func (uc *UserUseCase) Register(input *domain.RegisterUserInput) (*domain.User, 
 		role = domain.RoleAdmin
 	}
 	newUser := &domain.User{
-		
+
 		Username: input.Username,
 		Password: hashedPassword,
 		Role:     role,
@@ -78,7 +75,7 @@ func (uc *UserUseCase) Login(input domain.RegisterUserInput) (string, *domain.Us
 		return "", nil, errors.New("invalid username or password")
 	}
 	//generate token
-	token, err := uc.JWTService.GenerateToken(user.ID.Hex(), string(user.Role))
+	token, err := uc.JWTService.GenerateToken(user.ID.Hex(), user.Role)
 	if err != nil {
 		return "", nil, errors.New("failed to generate token")
 	}
