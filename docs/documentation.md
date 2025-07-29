@@ -4,42 +4,6 @@
 
 This project follows Clean Architecture principles, separating concerns into distinct layers with clear dependencies. The structure includes comprehensive test coverage at each architectural layer.
 
-### Core Layers
-TASK_MANAGEMENT_WITH_TEST/
-├── Domain/ # Enterprise business rules
-│ └── domain.go # Core entities and interfaces
-├── Repositories/ # Database operations
-│ ├── task_repository.go
-│ ├── task_repository_test.go
-│ ├── user_repository.go
-│ └── user_repository_test.go
-├── usecases/ # Application business rules
-│ ├── interface.go
-│ ├── task_usecases.go
-│ ├── task_usecases_test.go
-│ ├── user_usecases.go
-│ └── user_usecase_test.go
-├── infrastructure/ # Framework & drivers
-│ ├── auth_middleware.go
-│ ├── auth_middleware_test.go
-│ ├── jwt_service.go
-│ ├── jwt-service_test.go
-│ ├── password_service.go
-│ └── password_service_test.go
-├── Delivery/ # Interface adapters
-│ ├── controllers/
-│ │ └── task_controller.go
-│ └── router/
-│ └── router.go
-├── db/ # Database connection
-│ └── db.go
-├── docs/ # Documentation
-│ └── documentation.md
-├── .env # Environment variables
-├── .gitignore
-├── go.mod # Go dependencies
-└── main.go # Entry point
-
 
 ## Testing Strategy
 
