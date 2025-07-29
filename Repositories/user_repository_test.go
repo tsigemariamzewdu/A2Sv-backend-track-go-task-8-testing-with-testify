@@ -16,11 +16,11 @@ import (
 )
 
 //MockCollection mocks the MongoDB Collection
-type MockCollection struct {
+type MockUserCollection struct {
 	mock.Mock
 }
 
-func (m *MockCollection) InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+func (m *MockUserCollection) InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
 	args := m.Called(ctx, document)
 	var result *mongo.InsertOneResult
 	
@@ -33,59 +33,32 @@ func (m *MockCollection) InsertOne(ctx context.Context, document interface{}, op
 	return result, args.Error(1)
 }	
 
-func (m *MockCollection) FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult {
+func (m *MockUserCollection) FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult {
 	args := m.Called(ctx, filter)
 	return args.Get(0).(*mongo.SingleResult)
-	// 	return res
-	// }
-	// if args.Get(0) == nil {
-	// 	return nil
-	// }
-	// panic(errors.New("mocked FindOne result was not of type *mongo.SingleResult"))
+	
 }
 
-func (m *MockCollection) CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
+func (m *MockUserCollection) CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
 	args := m.Called(ctx, filter)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (m *MockUserCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	args := m.Called(ctx, filter, update)
 	return args.Get(0).(*mongo.UpdateResult), args.Error(1)
 }
 
-//MockSingleResult mocks the mongo.SingleResult
-// type MockableSingleResult struct{
-// 	mongo.SingleResult
-// 	mock.Mock
-// }
 
-// func (m *MockableSingleResult) Decode(v interface{})error{
-// 	args:=m.Called(v)
-// 	if args.Get(0)!=nil{
-// 		if user,ok:=args.Get(0).(*domain.User);ok{
-// 			targetUser,ok:=v.(*domain.User)
-// 			if ok{
-// 				*targetUser=*user
-// 			}
-// 		}else if rawBson,ok:=args.Get(0).(bson.Raw);ok{
-// 			return bson.Unmarshal(rawBson,v)
-// 		}
-// 	}
-// 	return args.Error(1)
-// }
-
-
-// Test suite
 type UserRepositoryTestSuite struct {
 	suite.Suite
 	repo        *repositories.UserRepository
-	mockCol     *MockCollection
+	mockCol     *MockUserCollection
 	mockContext context.Context
 }
 
 func (suite *UserRepositoryTestSuite) SetupTest() {
-	suite.mockCol = new(MockCollection)
+	suite.mockCol = new(MockUserCollection)
 	suite.mockContext = context.Background()
 	suite.repo = &repositories.UserRepository{
 		Collection: suite.mockCol,

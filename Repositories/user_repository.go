@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type IMongoCollection interface {
+type IUserMongoCollection interface {
 	InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 	CountDocuments(cts context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error)
@@ -24,7 +24,7 @@ type IMongoCollection interface {
 // implementation of userrepository and uses monogb
 
 type UserRepository struct {
-	Collection IMongoCollection
+	Collection IUserMongoCollection
 	Context    context.Context
 }
 
