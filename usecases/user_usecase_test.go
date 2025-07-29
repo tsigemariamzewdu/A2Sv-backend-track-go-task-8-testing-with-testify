@@ -125,7 +125,7 @@ func (suite *UserUseCaseTestSuite) TestRegister() {
 		suite.userRepo.On("CountAll").Return(int64(0), nil).Once()
 		suite.passwordService.On("HashPassword", input.Password).Return(hashedPassword, nil).Once()
 
-		//expect Createuser to be called with the new user(admin role) and return no error
+		
 		suite.userRepo.On("CreateUser", mock.AnythingOfType("*domain.User")).Return(nil).Run(func(args mock.Arguments) {
 			userArg := args.Get(0).(*domain.User)
 			suite.Equal(input.Username, userArg.Username)
